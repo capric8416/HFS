@@ -22,14 +22,14 @@ class ContentMeta
 {
 public:
     ContentMeta();
-    ContentMeta(FILE* fp, std::string name, std::string mine_type, long size, uint64_t created);
+    ContentMeta(FILE* fp, std::string name, std::string mine_type, long size, uint64_t created, char* buffer);
 
     bool IsExpired(uint64_t now);
     std::string& Name();
     long Size();
     std::string Type();
 
-    long ReadFile(char* buffer, std::size_t& range_from, std::size_t& range_to);
+    char* ReadBuffer(long& length, int& range_from, int& range_to);
     void CloseFile();
 
 private:
@@ -38,6 +38,7 @@ private:
     std::string m_Name;
     std::string m_MineType;
     uint64_t m_Created;
+    char* m_Buffer;
 };
 
 
@@ -49,15 +50,13 @@ public:
 
     DataRegion Route(EMethod method, const std::string& url, const std::string& range, const std::string& host) const;
 
-    DataRegion GetResouce(const std::string& uuid, std::size_t& range_from, std::size_t& range_to) const;
-
-    DataRegion GetToken(const std::string& type, const std::string& path);
+    DataRegion GetResouce(const std::string& uuid, int& range_from, int& range_to) const;
 
     std::string GetOrNewToken(const std::string& type, const std::string& path);
 
     std::string GenUUID();
 
-    void GetRange(const std::string& range, std::size_t& range_from, std::size_t& range_to) const;
+    void GetRange(const std::string& range, int& range_from, int& range_to) const;
 
 private:
     std::size_t m_Bytes;

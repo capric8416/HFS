@@ -42,8 +42,6 @@ public:
     WSABUF* GetBuffers() const;
     DWORD GetBufferCount() const;
 
-    void DestoryBuffer();
-
 private:
     void DoInit(ECode code, std::string type = "", const char* data = nullptr, size_t length = 0, long range_max = 0, size_t range_from = 0, size_t range_to = 0);
 

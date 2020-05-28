@@ -12,7 +12,6 @@ MemoryInput::MemoryInput()
     : m_Pos(0)
     , m_End(0)
 {
-    ITRACE("");
 }
 
 
@@ -20,30 +19,24 @@ MemoryInput::MemoryInput(const DataRegion& region)
     : m_Pos(region.GetData())
     , m_End(region.GetData() + region.GetLength())
 {
-    ITRACE("");
 }
 
 
 MemoryInput::MemoryInput(const char* data)
     : MemoryInput(DataRegion(data, strlen(data)))
 {
-    ITRACE("");
 }
 
 
 
 bool MemoryInput::HasMoreData() const
 {
-    //ITRACE("");
-
     return m_Pos != m_End;
 }
 
 
 char MemoryInput::ReadChar()
 {
-    //ITRACE("");
-
     assert(HasMoreData());
     const char ch = *m_Pos;
     ++m_Pos;
@@ -57,38 +50,29 @@ HttpRequest::HttpRequest()
     , m_LastCharWasCR(false)
     , m_Method(EMethod::Unknown)
 {
-    ITRACE("");
 }
 
 
 EStatus HttpRequest::GetStatus() const
 {
-    ITRACE("");
-
     return m_Status;
 }
 
 
 bool HttpRequest::IsComplete() const
 {
-    ITRACE("");
-
     return m_Status != EStatus::Incomplete;
 }
 
 
 EMethod HttpRequest::GetMethod() const
 {
-    ITRACE("");
-
     return m_Method;
 }
 
 
 const std::string& HttpRequest::GetURI() const
 {
-    ITRACE("");
-
     return m_URI;
 }
 
@@ -102,8 +86,6 @@ std::string HttpRequest::GetHeader(std::string name)
 
 void HttpRequest::Read(MemoryInput* in)
 {
-    ITRACE("");
-
     while (m_Status == EStatus::Incomplete && in->HasMoreData())
     {
         Consume(in->ReadChar());
@@ -113,8 +95,6 @@ void HttpRequest::Read(MemoryInput* in)
 
 void HttpRequest::Consume(char ch)
 {
-    //ITRACE("");
-
     assert(m_Status == EStatus::Incomplete);
 
     if (!m_LastCharWasCR) {
@@ -149,7 +129,7 @@ void HttpRequest::Consume(char ch)
 
 void HttpRequest::ProcessLine()
 {
-    ITRACE("");
+    ITRACE("%s", m_Line.c_str());
 
     if (m_Line.empty()) 
     {
@@ -178,8 +158,6 @@ void HttpRequest::ProcessLine()
 
 void HttpRequest::ParseFirstLine()
 {
-    ITRACE("");
-
     size_t pos = m_Line.find(' ');
     if (pos == std::string::npos) {
         m_Status = EStatus::Fail;
@@ -218,8 +196,6 @@ void HttpRequest::ParseFirstLine()
 
 void HttpRequest::ParseOtherLines()
 {
-    ITRACE("");
-
     size_t pos = m_Line.find(':');
     const std::string key = m_Line.substr(0, pos);
     const std::string value = m_Line.substr(pos + 2);

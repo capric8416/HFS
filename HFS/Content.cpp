@@ -18,18 +18,21 @@
 #pragma comment(lib, "rpcrt4.lib")
 
 
+#define EMPTY_BLOCK 4096
+
 
 ContentMeta::ContentMeta()
 {
 }
 
 
-ContentMeta::ContentMeta(FILE* fp, std::string name, std::string mine_type, long size, uint64_t created) :
-    m_File(fp),
-    m_Name(name),
-    m_MineType(mine_type),
-    m_Size(size),
-    m_Created(created)
+ContentMeta::ContentMeta(FILE* fp, std::string name, std::string mine_type, long size, uint64_t created, char* buffer)
+    : m_File(fp)
+    , m_Name(name)
+    , m_MineType(mine_type)
+    , m_Size(size)
+    , m_Created(created)
+    , m_Buffer(buffer)
 {
 }
 
@@ -58,13 +61,13 @@ std::string ContentMeta::Type()
 }
 
 
-long ContentMeta::ReadFile(char* buffer, std::size_t& range_from, std::size_t& range_to)
+char* ContentMeta::ReadBuffer(long& length, int& range_from, int& range_to)
 {
-    long length = 0;
+    length = 0;
 
-    if ((range_from == 0 && range_to == 0) || range_from >= m_Size)
+    if (range_from >= m_Size)
     {
-        return m_Size;
+        return m_Buffer;
     }
 
     if (range_to > m_Size)
@@ -72,13 +75,18 @@ long ContentMeta::ReadFile(char* buffer, std::size_t& range_from, std::size_t& r
         range_to = m_Size;
     }
 
-    rewind(m_File);
-    fseek(m_File, range_from, SEEK_CUR);
-    length = fread(buffer, sizeof(char), range_to - range_from, m_File);
+    int size = range_to - range_from;
+    if (size > 0)
+    {
+        length = size;
+        range_to -= 1;
+    }
+    else
+    {
+        length = EMPTY_BLOCK;
+    }
 
-    range_to -= 1;
-
-    return length;
+    return m_Buffer + range_from * sizeof(char);
 }
 
 
@@ -89,12 +97,18 @@ void ContentMeta::CloseFile()
         fclose(m_File);
         m_File = nullptr;
     }
+
+    if (m_Buffer != nullptr)
+    {
+        delete[] m_Buffer;
+        m_Buffer = nullptr;
+    }
 }
 
 
 
 ContentToServe::ContentToServe()
-    : m_Bytes(512000)
+    : m_Bytes(409600)
 {
     ITRACE("");
 }
@@ -122,8 +136,6 @@ ContentToServe::~ContentToServe()
 
 DataRegion ContentToServe::Route(EMethod method, const std::string& url, const std::string& range, const std::string& host) const
 {
-    ITRACE("");
-
     if (url.empty() || url[0] != '/') {
         return DataRegion();
     }
@@ -134,23 +146,14 @@ DataRegion ContentToServe::Route(EMethod method, const std::string& url, const s
     {
         case EMethod::Get:
         {
-            std::size_t range_from = 0;
-            std::size_t range_to = 0;
+            int range_from = 0;
+            int range_to = 0;
             GetRange(range, range_from, range_to);
 
             return GetResouce(path, range_from, range_to);
         }
         case EMethod::Post:
         {
-            auto hostname = host.substr(0, 9);
-            if (path.substr(0, 5) == "token" && (hostname == "127.0.0.1" || hostname == "localhost"))
-            {
-                auto temp = path.substr(6);
-                size_t pos = temp.find("/");
-                auto type = temp.substr(0, pos);
-                auto file = temp.substr(pos + 1);
-                return ((ContentToServe*)this)->GetToken(type, file);
-            }
         }
     }
 
@@ -158,7 +161,7 @@ DataRegion ContentToServe::Route(EMethod method, const std::string& url, const s
 }
 
 
-DataRegion ContentToServe::GetResouce(const std::string& uuid, std::size_t& range_from, std::size_t& range_to) const
+DataRegion ContentToServe::GetResouce(const std::string& uuid, int& range_from, int& range_to) const
 {
     auto iter = m_UUIDPath.find(uuid);
     if (iter == m_UUIDPath.end())
@@ -174,26 +177,14 @@ DataRegion ContentToServe::GetResouce(const std::string& uuid, std::size_t& rang
         return DataRegion();
     }
 
-    char* buffer = new char[m_Bytes];
-    long length = meta.ReadFile(buffer, range_from, range_to);
+    if (range_to == -1)
+    {
+        range_to = meta.Size();
+    }
+
+    long length = 0;
+    char* buffer = meta.ReadBuffer(length, range_from, range_to);
     return DataRegion(meta.Type(), buffer, length, range_from, range_to, meta.Size());
-}
-
-
-DataRegion ContentToServe::GetToken(const std::string& type, const std::string& path)
-{
-    auto uuid = GetOrNewToken(type, path);
-    if (uuid.empty())
-    {
-        return DataRegion();
-    }
-    else
-    {
-        size_t lenght = uuid.length();
-        char* buffer = new char[lenght];
-        memcpy(buffer, uuid.c_str(), lenght);
-        return DataRegion(buffer, lenght);
-    }
 }
 
 
@@ -237,8 +228,11 @@ std::string ContentToServe::GetOrNewToken(const std::string& type, const std::st
 
     fseek(fp, 0, SEEK_END);
     long size = ftell(fp);
-    ContentMeta pathMeta(fp, path, mine_type, size, now);
-    ContentMeta uuidMeta(fp, uuid, mine_type, size, now);
+    char* buffer = new char[size];
+    rewind(fp);
+    fread(buffer, sizeof(char), size, fp);
+    ContentMeta pathMeta(fp, path, mine_type, size, now, buffer);
+    ContentMeta uuidMeta(fp, uuid, "", 0, now, buffer);
     m_UUIDPath[uuid] = pathMeta;
     m_PathUUID[path] = uuidMeta;
 
@@ -266,7 +260,7 @@ std::string ContentToServe::GenUUID()
 }
 
 
-void ContentToServe::GetRange(const std::string& range, std::size_t& range_from, std::size_t& range_to) const
+void ContentToServe::GetRange(const std::string& range, int& range_from, int& range_to) const
 {
     if (!range.empty())
     {
@@ -280,7 +274,7 @@ void ContentToServe::GetRange(const std::string& range, std::size_t& range_from,
             {
                 range_from = std::atoi(temp.substr(0, pos).c_str());
                 auto str_range_to = temp.substr(pos + 1);
-                range_to = str_range_to.empty() ? range_from + m_Bytes : std::atoi(str_range_to.c_str());
+                range_to = str_range_to.empty() ? -1 : std::atoi(str_range_to.c_str());
             }
         }
     }

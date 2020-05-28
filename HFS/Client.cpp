@@ -113,14 +113,13 @@ void HttpClient::DoSend()
 
 void HttpClient::DoSendDone(DWORD bytesSent)
 {
-    ITRACE("");
-
     m_Response.Advance(bytesSent);
-    if (m_Response.IsFullySent())
-    {
-        // del response
-        m_Response.DestoryBuffer();
+    bool finished = m_Response.IsFullySent();
 
+    ITRACE("send: %d bytes, finish: %d", bytesSent, finished);
+
+    if (finished)
+    {
         // new request
         m_Request = HttpRequest();
         DoProcessRequest();

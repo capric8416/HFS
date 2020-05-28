@@ -12,30 +12,23 @@ HttpResponse::HttpResponse()
     : m_Pos(0)
     , m_SendBufferCount(0)
 {
-    ITRACE("");
 }
 
 
 void HttpResponse::Init(ECode code)
 {
-    ITRACE("");
-
     DoInit(code);
 }
 
 
 void HttpResponse::Init(std::string type, const char* data, size_t length, long range_max, size_t range_from, size_t range_to)
 {
-    ITRACE("");
-
     DoInit(ECode::OK, type, data, length, range_max, range_from, range_to);
 }
 
 
 size_t HttpResponse::GetTotalSize() const
 {
-    ITRACE("");
-
     size_t sum = 0;
     for (const WSABUF buf : m_AllBuffers)
     {
@@ -47,8 +40,6 @@ size_t HttpResponse::GetTotalSize() const
 
 void HttpResponse::Advance(size_t sent)
 {
-    ITRACE("");
-
     m_Pos += sent;
     assert(m_Pos <= GetTotalSize());
 }
@@ -56,8 +47,6 @@ void HttpResponse::Advance(size_t sent)
 
 bool HttpResponse::IsFullySent() const
 {
-    ITRACE("");
-
     assert(m_Pos <= GetTotalSize());
     return m_Pos == GetTotalSize();
 }
@@ -65,8 +54,6 @@ bool HttpResponse::IsFullySent() const
 
 void HttpResponse::Prepare(size_t maxBytesToSend)
 {
-    ITRACE("");
-
     m_SendBufferCount = 0;
 
     size_t acc = 0;
@@ -85,34 +72,18 @@ void HttpResponse::Prepare(size_t maxBytesToSend)
 
 WSABUF* HttpResponse::GetBuffers() const
 {
-    ITRACE("");
-
     return const_cast<WSABUF*>(m_SendBuffers.data());
 }
 
 
 DWORD HttpResponse::GetBufferCount() const
 {
-    ITRACE("");
-
     return m_SendBufferCount;
-}
-
-
-void HttpResponse::DestoryBuffer()
-{
-    if (m_Code == ECode::OK && m_AllBuffers[Body].buf != nullptr)
-    {
-        delete[] m_AllBuffers[Body].buf;
-        m_AllBuffers[Body].buf = nullptr;
-    }
 }
 
 
 void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t length, long range_max, size_t range_from, size_t range_to)
 {
-    ITRACE("");
-
     m_Code = code;
 
     m_Pos = 0;
@@ -153,6 +124,7 @@ void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t
     oss << "\r\n";
 
     m_HeaderText = std::move(oss.str());
+    ITRACE("\n%s", m_HeaderText.c_str());
     m_AllBuffers[Header].buf = &m_HeaderText[0];
     m_AllBuffers[Header].len = static_cast<ULONG>(m_HeaderText.length());
 }
@@ -160,8 +132,6 @@ void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t
 
 void HttpResponse::WriteCustomBody(int code, const char* message)
 {
-    ITRACE("");
-
     std::ostringstream oss;
     oss << "<html>";
     oss << "<body>";
@@ -174,8 +144,6 @@ void HttpResponse::WriteCustomBody(int code, const char* message)
 
 void HttpResponse::SetBody(const char* data, size_t length)
 {
-    ITRACE("");
-
     m_AllBuffers[Body].buf = const_cast<char*>(data);
     m_AllBuffers[Body].len = static_cast<ULONG>(length);
 }

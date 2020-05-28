@@ -15,7 +15,6 @@ DataRegion::DataRegion()
     , m_RangeTo(0)
     , m_TotalLength(0)
 {
-    ITRACE("");
 }
 
 
@@ -26,7 +25,6 @@ DataRegion::DataRegion(const char* data, size_t length)
     , m_RangeTo(0)
     , m_TotalLength(0)
 {
-    ITRACE("");
 }
 
 
@@ -39,15 +37,12 @@ DataRegion::DataRegion(std::string type, const char* data, size_t length, size_t
     , m_RangeTo(range_to)
     , m_TotalLength(total_length)
 {
-    ITRACE("");
 }
 
 
 DataRegion::operator bool() const 
 {
-    ITRACE("");
-
-    return m_Data != nullptr;
+    return m_Data != nullptr || m_TotalLength > 0;
 }
 
 
@@ -59,16 +54,12 @@ std::string DataRegion::GetType() const
 
 const char* DataRegion::GetData() const
 {
-    ITRACE("");
-
     return m_Data;
 }
 
 
 size_t DataRegion::GetLength() const 
 {
-    ITRACE("");
-
     return m_Length;
 }
 

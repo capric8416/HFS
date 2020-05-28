@@ -14,30 +14,24 @@
 SocketWrapper::SocketWrapper()
     : m_Socket(INVALID_SOCKET)
 {
-    ITRACE("");
 }
 
 
 SocketWrapper::SocketWrapper(SOCKET socket)
     : m_Socket(socket)
 {
-    ITRACE("");
 }
 
 
 SocketWrapper::SocketWrapper(SocketWrapper&& other)
     : m_Socket(INVALID_SOCKET)
 {
-    ITRACE("");
-
     std::swap(m_Socket, other.m_Socket);
 }
 
 
 SocketWrapper::~SocketWrapper()
 {
-    ITRACE("");
-
     if (m_Socket != INVALID_SOCKET) {
         if (closesocket(m_Socket) != 0) {
             ITRACE("Closing socket failed: %0x", WSAGetLastError());
@@ -48,24 +42,18 @@ SocketWrapper::~SocketWrapper()
 
 SOCKET SocketWrapper::Get() const
 {
-    ITRACE("");
-
     return m_Socket;
 }
 
 
 SocketWrapper::operator bool() const
 {
-    ITRACE("");
-
     return (m_Socket != INVALID_SOCKET);
 }
 
 
 ListeningSocketWrapper::ListeningSocketWrapper(unsigned short port, uint16_t* SetPort)
 {
-    ITRACE("");
-
     sockaddr_in serverAddr;
 
     // Overlapped I/O follows the model established in Windows and can be performed only on 
@@ -105,8 +93,6 @@ ListeningSocketWrapper::ListeningSocketWrapper(unsigned short port, uint16_t* Se
 
 WSAEventWrapper::WSAEventWrapper()
 {
-    ITRACE("");
-
     m_Event = WSACreateEvent();
     if (m_Event == WSA_INVALID_EVENT) {
         throw WSAException("unable to create WSA event", WSAGetLastError());
@@ -116,8 +102,6 @@ WSAEventWrapper::WSAEventWrapper()
 
 WSAEventWrapper::~WSAEventWrapper()
 {
-    ITRACE("");
-
     if (!WSACloseEvent(m_Event)) {
         ITRACE("WSACloseEvent failed");
     }
@@ -126,7 +110,5 @@ WSAEventWrapper::~WSAEventWrapper()
 
 const WSAEVENT& WSAEventWrapper::Get() const
 {
-    //ITRACE("");
-
     return m_Event;
 }

@@ -25,8 +25,8 @@
 
 
 // constants to tune
-const size_t RECV_BUF_LENGTH = 4096;
-const size_t MAX_SEND_BLOCK = 4096;
+const size_t RECV_BUF_LENGTH = 40960;
+const size_t MAX_SEND_BLOCK = 409600;
 
 
 enum EOperation
@@ -47,8 +47,6 @@ public:
         , m_RecvFlags(0)
         , m_TotalBytesTransferred(0)
     {
-        ITRACE("");
-
         ZeroMemory(&m_OverlappedStruct, sizeof(m_OverlappedStruct));
 
         m_RecvBuf.len = static_cast<unsigned long>(m_RecvData.size());
@@ -56,27 +54,19 @@ public:
     }
     ~HttpClient()
     {
-        ITRACE("");
-
         assert(IsCompleted());
     }
 
     // is called from accept thread
     void InitialReceive()
     {
-        ITRACE("");
-
         DoRecv();
     }
 
     // is called from working thread
     void CompleteIOOperation(DWORD bytesTransferred)
     {
-        ITRACE("");
-
         m_TotalBytesTransferred += bytesTransferred;
-
-        ITRACE("Completed IO (%ld bytes)", bytesTransferred);
 
         switch (m_CurrentOp)
         {
@@ -93,23 +83,17 @@ public:
 
     bool IsCompleted() const
     {
-        ITRACE("");
-
         return (m_CurrentOp == EOperation::No) || HasOverlappedIoCompleted(&m_OverlappedStruct);
     }
 
 
     size_t GetTotalBytesTrasferred() const
     {
-        ITRACE("");
-
         return m_TotalBytesTransferred;
     }
 
     EOperation GetOperation() const
     {
-        ITRACE("");
-
         return m_CurrentOp;
     }
 
