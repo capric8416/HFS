@@ -22,14 +22,16 @@ void WorkerThread(ServerContext* ctx)
         ULONG_PTR clientID = 0;
         OVERLAPPED* overlappedStruct = 0;
 
-        const BOOL result = GetQueuedCompletionStatus(ctx->GetIOCompletionPort(), &bytesTransferred, &clientID, &overlappedStruct, INFINITE);
+        const BOOL result = GetQueuedCompletionStatus(ctx->GetIOCompletionPort(), &bytesTransferred, &clientID, &overlappedStruct, 2000);
 
-        assert(clientID != 0);
-
-        if (!result || (bytesTransferred == 0)) {
-            //Client connection gone, remove it.
-            ctx->NotifyClientDeath(clientID);
-            continue;
+        if (!result || (bytesTransferred == 0))
+        {
+            if (clientID != 0)
+            {
+                //Client connection gone, remove it.
+                ctx->NotifyClientDeath(clientID);
+                continue;
+            }
         }
 
         const ClientPtr& client = ctx->GetClientByID(clientID);
