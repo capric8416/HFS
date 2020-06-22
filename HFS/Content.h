@@ -45,8 +45,7 @@ private:
 class ContentToServe {
 public:
     ContentToServe();
-    ContentToServe(std::size_t bytes);
-    ~ContentToServe();
+    virtual ~ContentToServe();
 
     DataRegion Route(EMethod method, const std::string& url, const std::string& range, const std::string& host) const;
 
@@ -59,7 +58,6 @@ public:
     void GetRange(const std::string& range, int& range_from, int& range_to) const;
 
 private:
-    std::size_t m_Bytes;
     std::map<std::string, ContentMeta> m_PathUUID;
     std::map<std::string, ContentMeta> m_UUIDPath;
 };

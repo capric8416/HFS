@@ -21,7 +21,7 @@ class WSAContext
 {
 public:
     WSAContext();
-    ~WSAContext();
+    virtual ~WSAContext();
 };
 
 
@@ -29,7 +29,7 @@ class ServerContext
 {
 public:
     ServerContext();
-    ~ServerContext();
+    virtual ~ServerContext();
 
     std::string FileAccessAuth(std::string type, std::string path);
 

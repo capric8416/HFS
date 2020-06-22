@@ -27,7 +27,7 @@ int _tmain(int /*argc*/, _TCHAR* /*argv[]*/)
     xfs = new HttpServer();
 
     auto port = xfs->Port();
-    auto token = xfs->FileAccessAuth("video", "E:\\Overwatch_Alive_Short_720p_30fps.mp4");
+    auto token = xfs->FileAccessAuth("video", "D:\\Overwatch_Alive_Short_720p_30fps.mp4");
     ITrace("========== http://192.168.11.145:%d/%s", port, token);
 
     try

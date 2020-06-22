@@ -10,6 +10,7 @@
 
 HttpResponse::HttpResponse()
     : m_Pos(0)
+    , m_TotalLength(0)
     , m_SendBufferCount(0)
 {
 }
@@ -17,24 +18,21 @@ HttpResponse::HttpResponse()
 
 void HttpResponse::Init(ECode code)
 {
+    m_TotalLength = 0;
     DoInit(code);
 }
 
 
 void HttpResponse::Init(std::string type, const char* data, size_t length, long range_max, size_t range_from, size_t range_to)
 {
+    m_TotalLength = range_max;
     DoInit(ECode::OK, type, data, length, range_max, range_from, range_to);
 }
 
 
 size_t HttpResponse::GetTotalSize() const
 {
-    size_t sum = 0;
-    for (const WSABUF buf : m_AllBuffers)
-    {
-        sum += buf.len;
-    }
-    return sum;
+    return m_AllBuffers[Header].len + m_TotalLength;
 }
 
 
@@ -57,10 +55,12 @@ void HttpResponse::Prepare(size_t maxBytesToSend)
     m_SendBufferCount = 0;
 
     size_t acc = 0;
-    for (const WSABUF buf : m_AllBuffers) {
+    for (const WSABUF buf : m_AllBuffers)
+    {
         const size_t beg = std::max<size_t>(acc, m_Pos);
         const size_t end = std::min<size_t>(acc + buf.len, m_Pos + maxBytesToSend);
-        if (beg < end) {
+        if (beg < end)
+        {
             m_SendBuffers[m_SendBufferCount].len = static_cast<ULONG>(end - beg);
             m_SendBuffers[m_SendBufferCount].buf = buf.buf + (beg - acc);
             ++m_SendBufferCount;

@@ -64,6 +64,7 @@ private:
 
     size_t m_Pos;
 
+    long m_TotalLength;
     DWORD m_SendBufferCount;
     std::array<WSABUF, 2> m_SendBuffers;
 };

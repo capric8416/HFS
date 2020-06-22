@@ -24,11 +24,6 @@
 #define WIN32_LEAN_AND_MEAN
 
 
-// constants to tune
-const size_t RECV_BUF_LENGTH = 40960;
-const size_t MAX_SEND_BLOCK = 409600;
-
-
 enum EOperation
 {
     No,
@@ -52,7 +47,7 @@ public:
         m_RecvBuf.len = static_cast<unsigned long>(m_RecvData.size());
         m_RecvBuf.buf = m_RecvData.data();
     }
-    ~HttpClient()
+    virtual ~HttpClient()
     {
         assert(IsCompleted());
     }

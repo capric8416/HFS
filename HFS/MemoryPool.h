@@ -18,7 +18,7 @@
 class MemoryPool {
 public:
     MemoryPool(size_t blockSize, size_t capacity);
-    ~MemoryPool();
+    virtual ~MemoryPool();
 
     size_t GetAvailableBlocks() const;
 

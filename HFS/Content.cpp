@@ -108,15 +108,8 @@ void ContentMeta::CloseFile()
 
 
 ContentToServe::ContentToServe()
-    : m_Bytes(409600)
 {
     ITRACE("");
-}
-
-
-ContentToServe::ContentToServe(std::size_t bytes)
-    : m_Bytes(bytes)
-{
 }
 
 

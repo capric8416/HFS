@@ -20,7 +20,7 @@ public:
     SocketWrapper();
     SocketWrapper(SOCKET socket);
     SocketWrapper(SocketWrapper&& other);
-    ~SocketWrapper();
+    virtual ~SocketWrapper();
 
     SOCKET Get() const;
 
@@ -47,7 +47,7 @@ class WSAEventWrapper
 public:
     WSAEventWrapper();
 
-    ~WSAEventWrapper();
+    virtual ~WSAEventWrapper();
 
     const WSAEVENT& Get() const;
 

@@ -109,8 +109,6 @@ void ServerContext::NotifyClientDeath(size_t clientID)
 
 const ClientPtr& ServerContext::GetClientByID(size_t clientID)
 {
-    ITRACE("");
-
     std::lock_guard<std::mutex> lock(m_Mutex);
     const auto it = m_ActiveClients.find(clientID);
     if (it != m_ActiveClients.end())
@@ -134,8 +132,6 @@ void ServerContext::ShutDown()
 
 bool ServerContext::NeedToShutDown() const
 {
-    //ITRACE("");
-
     return m_ShutdownFlag;
 }
 
@@ -150,8 +146,6 @@ const ContentToServe& ServerContext::GetContentToServe() const
 
 HANDLE ServerContext::GetIOCompletionPort() const
 {
-    ITRACE("");
-
     return m_IOCompletionPort;
 }
 
