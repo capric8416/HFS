@@ -61,6 +61,7 @@ void HttpResponse::Prepare(size_t maxBytesToSend)
         const size_t end = std::min<size_t>(acc + buf.len, m_Pos + maxBytesToSend);
         if (beg < end)
         {
+            ITRACE("offset: %d, len: %d", beg - acc, end - beg);
             m_SendBuffers[m_SendBufferCount].len = static_cast<ULONG>(end - beg);
             m_SendBuffers[m_SendBufferCount].buf = buf.buf + (beg - acc);
             ++m_SendBufferCount;
