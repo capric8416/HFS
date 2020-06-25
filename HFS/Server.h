@@ -19,17 +19,17 @@ class HttpServer
 {
 public:
     HttpServer();
-    HttpServer(uint16_t port);
+    HttpServer(uint16_t Port);
 
-    void Run(uint16_t* port);
+    void Run(uint16_t* Port);
     void Stop();
 
     uint16_t Port();
-    std::string FileAccessAuth(std::string type, std::string path);
+    std::string FileAccessAuth(std::string Type, std::string Path);
 
-    void AcceptingLoop(uint16_t* port);
+    void AcceptingLoop(uint16_t* Port);
 
-    void AcceptConnection(const ListeningSocketWrapper& listeningSocket);
+    void AcceptConnection(const ListeningSocketWrapper& ListeningSocket);
 
 private:
     uint16_t m_Port;

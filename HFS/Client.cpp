@@ -47,12 +47,12 @@ void HttpClient::DoRecv()
 }
 
 
-void HttpClient::DoRecvDone(DWORD bytesReceived)
+void HttpClient::DoRecvDone(DWORD BytesReceived)
 {
     ITRACE("");
 
     // BytesReceived and RecvData is assumed to be valid
-    m_MemoryInput = MemoryInput(DataRegion(m_RecvData.data(), bytesReceived));
+    m_MemoryInput = MemoryInput(DataRegion(m_RecvData.data(), BytesReceived));
     DoProcessRequest();
 }
 
@@ -65,10 +65,11 @@ void HttpClient::MakeResponse()
 
     if (m_Request.GetStatus() == EStatus::OK)
     {
-        DataRegion region = m_Content.Route(m_Request.GetMethod(), m_Request.GetURI(), m_Request.GetHeader("Range"), m_Request.GetHeader("Host"));
+        std::string uuid;
+        DataRegion region = m_Content.Route(m_Request.GetMethod(), m_Request.GetURI(), m_Request.GetHeader("Range"), m_Request.GetHeader("Host"), uuid);
         if (region)
         {
-            m_Response.Init(region.GetType(), region.GetData(), region.GetLength(), region.GetTotalLenght(), region.GetRangeFrom(), region.GetRangeTo());
+            m_Response.Init(region.GetType(), region.GetData(), region.GetLength(), region.GetTotalLength(), region.GetRangeFrom(), region.GetRangeTo(), ((ContentToServe&)m_Content).GetMeta(uuid));
         }
         else
         {
@@ -89,7 +90,11 @@ void HttpClient::DoSend()
     m_SendFlags = 0;
     ZeroMemory(&m_OverlappedStruct, sizeof(m_OverlappedStruct));
 
-    m_Response.Prepare(MAX_SEND_BLOCK);
+    char* buffer = m_Response.Prepare(OTHER_SEND_BUF_LEN);
+    if (buffer != nullptr)
+    {
+        m_Buffers.insert(buffer);
+    }
 
     assert(!m_Response.IsFullySent());
     WSABUF* bufs = m_Response.GetBuffers();
@@ -111,12 +116,15 @@ void HttpClient::DoSend()
 }
 
 
-void HttpClient::DoSendDone(DWORD bytesSent)
+void HttpClient::DoSendDone(DWORD BytesSent)
 {
-    m_Response.Advance(bytesSent);
+    m_Response.Advance(BytesSent);
+
+    m_Response.RemoveBuffer();
+
     bool finished = m_Response.IsFullySent();
 
-    ITRACE("send: %d bytes, finish: %d", bytesSent, finished);
+    ITRACE("send: %d bytes, finish: %d", BytesSent, finished);
 
     if (finished)
     {

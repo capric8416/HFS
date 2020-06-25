@@ -17,16 +17,16 @@ SocketWrapper::SocketWrapper()
 }
 
 
-SocketWrapper::SocketWrapper(SOCKET socket)
-    : m_Socket(socket)
+SocketWrapper::SocketWrapper(SOCKET Socket)
+    : m_Socket(Socket)
 {
 }
 
 
-SocketWrapper::SocketWrapper(SocketWrapper&& other)
+SocketWrapper::SocketWrapper(SocketWrapper&& Other)
     : m_Socket(INVALID_SOCKET)
 {
-    std::swap(m_Socket, other.m_Socket);
+    std::swap(m_Socket, Other.m_Socket);
 }
 
 
@@ -52,7 +52,7 @@ SocketWrapper::operator bool() const
 }
 
 
-ListeningSocketWrapper::ListeningSocketWrapper(unsigned short port, uint16_t* SetPort)
+ListeningSocketWrapper::ListeningSocketWrapper(unsigned short Port, uint16_t* SetPort)
 {
     sockaddr_in serverAddr;
 
@@ -71,7 +71,7 @@ ListeningSocketWrapper::ListeningSocketWrapper(unsigned short port, uint16_t* Se
     // Fill up the address structure
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
-    serverAddr.sin_port = htons(port);
+    serverAddr.sin_port = htons(Port);
 
     // Assign local address and port number
     const int bindResult = bind(m_Socket, (struct sockaddr*) & serverAddr, sizeof(serverAddr));
@@ -87,7 +87,7 @@ ListeningSocketWrapper::ListeningSocketWrapper(unsigned short port, uint16_t* Se
         throw WSAException("Error occurred while listening", WSAGetLastError());
     }
 
-    *SetPort = port;
+    *SetPort = Port;
 }
 
 

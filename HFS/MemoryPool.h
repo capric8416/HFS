@@ -17,19 +17,19 @@
 
 class MemoryPool {
 public:
-    MemoryPool(size_t blockSize, size_t capacity);
+    MemoryPool(size_t BlockSize, size_t Capacity);
     virtual ~MemoryPool();
 
     size_t GetAvailableBlocks() const;
 
     char* NewRaw();
-    void DeleteRaw(char* block);
+    void DeleteRaw(char* Block);
 
     typedef std::unique_ptr<char, std::function<void(char*)>> Holder;
     Holder Create();
 
 private:
-    MemoryPool(const MemoryPool& other) = delete;
+    MemoryPool(const MemoryPool& Other) = delete;
     MemoryPool& operator=(const MemoryPool&) = delete;
 
 private:

@@ -20,13 +20,13 @@ HttpServer::HttpServer()
 }
 
 
-HttpServer::HttpServer(uint16_t port)
-    : m_Port(port)
+HttpServer::HttpServer(uint16_t Port)
+    : m_Port(Port)
 {
 }
 
 
-void HttpServer::Run(uint16_t* port)
+void HttpServer::Run(uint16_t* Port)
 {
     ITRACE("");
 
@@ -36,7 +36,7 @@ void HttpServer::Run(uint16_t* port)
     {
         try
         {
-            AcceptingLoop(port);
+            AcceptingLoop(Port);
         }
         catch (const WSAException & ex)
         {
@@ -64,17 +64,17 @@ uint16_t HttpServer::Port()
 }
 
 
-std::string HttpServer::FileAccessAuth(std::string type, std::string path)
+std::string HttpServer::FileAccessAuth(std::string Type, std::string Path)
 {
-    return m_ServerContext.FileAccessAuth(type, path);
+    return m_ServerContext.FileAccessAuth(Type, Path);
 }
 
 
-void HttpServer::AcceptingLoop(uint16_t* port)
+void HttpServer::AcceptingLoop(uint16_t* Port)
 {
     ITRACE("");
 
-    ListeningSocketWrapper listeningSocket(m_Port, port);
+    ListeningSocketWrapper listeningSocket(m_Port, Port);
     WSAEventWrapper acceptEvent;
     const DWORD acceptTimeout = 100;
 
@@ -111,7 +111,7 @@ void HttpServer::AcceptingLoop(uint16_t* port)
 }
 
 
-void HttpServer::AcceptConnection(const ListeningSocketWrapper& listeningSocket)
+void HttpServer::AcceptConnection(const ListeningSocketWrapper& ListeningSocket)
 {
     ITRACE("");
 
@@ -119,7 +119,7 @@ void HttpServer::AcceptConnection(const ListeningSocketWrapper& listeningSocket)
     ZeroMemory(&clientAddr, sizeof(clientAddr));
     int clientAddrSize = sizeof(clientAddr);
 
-    SocketWrapper socket = WSAAccept(listeningSocket.Get(), reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrSize, NULL, NULL);
+    SocketWrapper socket = WSAAccept(ListeningSocket.Get(), reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrSize, NULL, NULL);
     if (!socket)
     {
         throw WSAException("WSAAccept failed", WSAGetLastError());

@@ -14,6 +14,8 @@
 // c/c++
 #include <memory>
 #include <map>
+#include <mutex>
+#include <set>
 #include <string>
 #include <stdint.h>
 
@@ -22,14 +24,17 @@ class ContentMeta
 {
 public:
     ContentMeta();
-    ContentMeta(FILE* fp, std::string name, std::string mine_type, long size, uint64_t created, char* buffer);
+    ContentMeta(FILE* File, std::string Name, std::string MineType, uint64_t Created);
 
-    bool IsExpired(uint64_t now);
+    bool IsExpired(uint64_t Now);
     std::string& Name();
     long Size();
     std::string Type();
 
-    char* ReadBuffer(long& length, int& range_from, int& range_to);
+    void ReadFirstBuffer();
+    char* GetFirstBuffer(long& Length, int& RangeFrom, int& RangeTo);
+    char* ReadOtherBuffer(size_t RangeFrom, size_t& Length);
+    void RemoveBuffer(char* Buffer);
     void CloseFile();
 
 private:
@@ -39,6 +44,9 @@ private:
     std::string m_MineType;
     uint64_t m_Created;
     char* m_Buffer;
+    std::set<char*> m_Buffers;
+
+    mutable std::mutex m_Mutex;
 };
 
 
@@ -47,17 +55,19 @@ public:
     ContentToServe();
     virtual ~ContentToServe();
 
-    DataRegion Route(EMethod method, const std::string& url, const std::string& range, const std::string& host) const;
+    DataRegion Route(EMethod Method, const std::string& URL, const std::string& Range, const std::string& Host, std::string& UUID) const;
 
-    DataRegion GetResouce(const std::string& uuid, int& range_from, int& range_to) const;
+    DataRegion GetResouce(const std::string& UUID, int& RangeFrom, int& RangeTo) const;
 
-    std::string GetOrNewToken(const std::string& type, const std::string& path);
+    ContentMeta* GetMeta(std::string UUID);
+
+    std::string GetOrNewToken(const std::string& Type, const std::string& Path);
 
     std::string GenUUID();
 
-    void GetRange(const std::string& range, int& range_from, int& range_to) const;
+    void GetRange(const std::string& Range, int& RangeFrom, int& RangeTo) const;
 
 private:
-    std::map<std::string, ContentMeta> m_PathUUID;
-    std::map<std::string, ContentMeta> m_UUIDPath;
+    std::map<std::string, ContentMeta*> m_PathUUID;
+    std::map<std::string, ContentMeta*> m_UUIDPath;
 };

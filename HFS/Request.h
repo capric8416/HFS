@@ -36,8 +36,8 @@ enum class EMethod {
 class MemoryInput {
 public:
     MemoryInput();
-    explicit MemoryInput(const DataRegion& region);
-    explicit MemoryInput(const char* data);
+    explicit MemoryInput(const DataRegion& Region);
+    explicit MemoryInput(const char* Data);
 
     bool HasMoreData() const;
     char ReadChar();
@@ -58,12 +58,12 @@ public:
 
     EMethod GetMethod() const;
     const std::string& GetURI() const;
-    std::string GetHeader(std::string name);
+    std::string GetHeader(std::string Name);
 
-    void Read(MemoryInput* in);
+    void Read(MemoryInput* In);
 
 private:
-    void Consume(char ch);
+    void Consume(char Ch);
 
     void ProcessLine();
 

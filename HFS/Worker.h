@@ -12,7 +12,7 @@
 class ServerContext;
 
 
-void WorkerThread(ServerContext* ctx);
+void WorkerThread(ServerContext* Ctx);
 
-void WorkerThreadWrapper(ServerContext* ctx);
+void WorkerThreadWrapper(ServerContext* Ctx);
 

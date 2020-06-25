@@ -15,15 +15,15 @@ MemoryInput::MemoryInput()
 }
 
 
-MemoryInput::MemoryInput(const DataRegion& region)
-    : m_Pos(region.GetData())
-    , m_End(region.GetData() + region.GetLength())
+MemoryInput::MemoryInput(const DataRegion& Region)
+    : m_Pos(Region.GetData())
+    , m_End(Region.GetData() + Region.GetLength())
 {
 }
 
 
-MemoryInput::MemoryInput(const char* data)
-    : MemoryInput(DataRegion(data, strlen(data)))
+MemoryInput::MemoryInput(const char* Data)
+    : MemoryInput(DataRegion(Data, strlen(Data)))
 {
 }
 
@@ -77,43 +77,43 @@ const std::string& HttpRequest::GetURI() const
 }
 
 
-std::string HttpRequest::GetHeader(std::string name)
+std::string HttpRequest::GetHeader(std::string Name)
 {
-    auto iter = m_Headers.find(name);
+    auto iter = m_Headers.find(Name);
     return iter != m_Headers.end() ? iter->second : "";
 }
 
 
-void HttpRequest::Read(MemoryInput* in)
+void HttpRequest::Read(MemoryInput* In)
 {
-    while (m_Status == EStatus::Incomplete && in->HasMoreData())
+    while (m_Status == EStatus::Incomplete && In->HasMoreData())
     {
-        Consume(in->ReadChar());
+        Consume(In->ReadChar());
     }
 }
 
 
-void HttpRequest::Consume(char ch)
+void HttpRequest::Consume(char Ch)
 {
     assert(m_Status == EStatus::Incomplete);
 
     if (!m_LastCharWasCR) {
-        if (ch == '\r') {
+        if (Ch == '\r') {
             m_LastCharWasCR = true;
         }
         else {
-            m_Line += ch;
+            m_Line += Ch;
         }
 
     }
     else {
-        if (ch == '\n') {
+        if (Ch == '\n') {
             m_LastCharWasCR = false;
             ProcessLine();
             m_Line.clear();
 
         }
-        else if (ch == '\r') {
+        else if (Ch == '\r') {
             m_LastCharWasCR = true;
             m_Line += '\r'; // for prev. CR
 
@@ -121,7 +121,7 @@ void HttpRequest::Consume(char ch)
         else {
             m_LastCharWasCR = false;
             m_Line += '\r'; // for prev. CR
-            m_Line += ch;
+            m_Line += Ch;
         }
     }
 }

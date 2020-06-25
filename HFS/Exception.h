@@ -14,7 +14,7 @@
 class WinAPIException : public std::runtime_error
 {
 public:
-    WinAPIException(const char* message, int errorCode);
+    WinAPIException(const char* Message, int ErrorCode);
 
     int GetErrorCode() const;
 
@@ -26,5 +26,5 @@ private:
 class WSAException : public WinAPIException
 {
 public:
-    WSAException(const char* message, int errorCode);
+    WSAException(const char* Message, int ErrorCode);
 };

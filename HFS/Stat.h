@@ -16,7 +16,7 @@ class StatPrinter
 public:
     StatPrinter();
 
-    bool Print(size_t numClients);
+    bool Print(size_t NumClients);
 
 private:
     uint64_t m_LastPrinted;

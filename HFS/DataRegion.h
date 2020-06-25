@@ -15,8 +15,8 @@
 class DataRegion {
 public:
     DataRegion();
-    DataRegion(const char* data, size_t length);
-    DataRegion(std::string type, const char* data, size_t length, size_t range_from, size_t range_to, long total_length);
+    DataRegion(const char* Data, size_t Length);
+    DataRegion(std::string Type, const char* Data, size_t Length, size_t RangeFrom, size_t RangeTo, long TotalLength);
 
     explicit operator bool() const;
 
@@ -25,7 +25,7 @@ public:
     size_t GetLength() const;
     size_t GetRangeFrom() const;
     size_t GetRangeTo() const;
-    long GetTotalLenght() const;
+    long GetTotalLength() const;
 
 private:
     std::string m_Type;

@@ -8,11 +8,11 @@
 #include <Windows.h>
 
 
-WinAPIException::WinAPIException(const char* message, int errorCode)
-    : std::runtime_error(message)
-    , m_ErrorCode(errorCode)
+WinAPIException::WinAPIException(const char* Message, int ErrorCode)
+    : std::runtime_error(Message)
+    , m_ErrorCode(ErrorCode)
 {
-    ITRACE("code:%d, msg: %s", errorCode, message);
+    ITRACE("code:%d, msg: %s", ErrorCode, Message);
 }
 
 int WinAPIException::GetErrorCode() const
@@ -20,8 +20,8 @@ int WinAPIException::GetErrorCode() const
     return m_ErrorCode;
 }
 
-WSAException::WSAException(const char* message, int errorCode)
-    : WinAPIException(message, errorCode)
+WSAException::WSAException(const char* Message, int ErrorCode)
+    : WinAPIException(Message, ErrorCode)
 {
-    ITRACE("code:%d, msg: %s", errorCode, message);
+    ITRACE("code:%d, msg: %s", ErrorCode, Message);
 }

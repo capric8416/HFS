@@ -12,29 +12,29 @@
 
 
 
-void WorkerThread(ServerContext* ctx)
+void WorkerThread(ServerContext* Ctx)
 {
     ITRACE("");
 
-    while (!ctx->NeedToShutDown())
+    while (!Ctx->NeedToShutDown())
     {
         DWORD bytesTransferred = 0;
         ULONG_PTR clientID = 0;
         OVERLAPPED* overlappedStruct = 0;
 
-        const BOOL result = GetQueuedCompletionStatus(ctx->GetIOCompletionPort(), &bytesTransferred, &clientID, &overlappedStruct, 2000);
+        const BOOL result = GetQueuedCompletionStatus(Ctx->GetIOCompletionPort(), &bytesTransferred, &clientID, &overlappedStruct, 2000);
 
         if (!result || (bytesTransferred == 0))
         {
             if (clientID != 0)
             {
                 //Client connection gone, remove it.
-                ctx->NotifyClientDeath(clientID);
+                Ctx->NotifyClientDeath(clientID);
                 continue;
             }
         }
 
-        const ClientPtr& client = ctx->GetClientByID(clientID);
+        const ClientPtr& client = Ctx->GetClientByID(clientID);
         if (client)
         {
             assert(client->IsCompleted());
@@ -47,7 +47,7 @@ void WorkerThread(ServerContext* ctx)
                 ITRACE("ERROR: client %0x, failed: %s", clientID, ex.what());
                 if (client->IsCompleted())
                 {
-                    ctx->NotifyClientDeath(clientID);
+                    Ctx->NotifyClientDeath(clientID);
                 }
             }
         }
@@ -55,13 +55,13 @@ void WorkerThread(ServerContext* ctx)
 }
 
 
-void WorkerThreadWrapper(ServerContext* ctx)
+void WorkerThreadWrapper(ServerContext* Ctx)
 {
     ITRACE("");
 
     try
     {
-        WorkerThread(ctx);
+        WorkerThread(Ctx);
     }
     catch (const std::exception & ex)
     {

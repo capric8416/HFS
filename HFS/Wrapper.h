@@ -18,8 +18,8 @@ class SocketWrapper
 {
 public:
     SocketWrapper();
-    SocketWrapper(SOCKET socket);
-    SocketWrapper(SocketWrapper&& other);
+    SocketWrapper(SOCKET Socket);
+    SocketWrapper(SocketWrapper&& Other);
     virtual ~SocketWrapper();
 
     SOCKET Get() const;
@@ -27,7 +27,7 @@ public:
     explicit operator bool() const;
 
 private:
-    SocketWrapper(const SocketWrapper& other) = delete;
+    SocketWrapper(const SocketWrapper& Other) = delete;
     SocketWrapper& operator=(const SocketWrapper&) = delete;
 
 protected:
@@ -38,7 +38,7 @@ protected:
 class ListeningSocketWrapper : public SocketWrapper
 {
 public:
-    ListeningSocketWrapper(unsigned short port, uint16_t* SetPort);
+    ListeningSocketWrapper(unsigned short Port, uint16_t* SetPort);
 };
 
 
@@ -52,7 +52,7 @@ public:
     const WSAEVENT& Get() const;
 
 private:
-    WSAEventWrapper(const WSAEventWrapper& other) = delete;
+    WSAEventWrapper(const WSAEventWrapper& Other) = delete;
     WSAEventWrapper& operator=(const WSAEventWrapper&) = delete;
 
 private:

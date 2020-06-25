@@ -31,13 +31,13 @@ public:
     ServerContext();
     virtual ~ServerContext();
 
-    std::string FileAccessAuth(std::string type, std::string path);
+    std::string FileAccessAuth(std::string Type, std::string Path);
 
-    void InitNewClient(SocketWrapper&& socket);
+    void InitNewClient(SocketWrapper&& Socket);
 
-    void NotifyClientDeath(size_t clientID);
+    void NotifyClientDeath(size_t ClientID);
 
-    const ClientPtr& GetClientByID(size_t clientID);
+    const ClientPtr& GetClientByID(size_t ClientID);
 
     void ShutDown();
 
@@ -52,9 +52,9 @@ public:
     void EnumClients() const;
 
 private:
-    void AddToMap(size_t clientID, ClientPtr&& client);
+    void AddToMap(size_t ClientID, ClientPtr&& Client);
 
-    void RemoveFromMap(size_t clientID);
+    void RemoveFromMap(size_t ClientID);
 
 private:
     std::atomic<bool> m_ShutdownFlag;

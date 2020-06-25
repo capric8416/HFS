@@ -3,6 +3,7 @@
 
 // project
 #include "Common.h"
+#include "Content.h"
 
 // c/c++
 #include <cassert>
@@ -10,36 +11,69 @@
 
 HttpResponse::HttpResponse()
     : m_Pos(0)
-    , m_TotalLength(0)
+    , m_Meta(nullptr)
+    , m_RangeFrom(0)
     , m_SendBufferCount(0)
 {
 }
 
 
-void HttpResponse::Init(ECode code)
+void HttpResponse::Init(ECode Type)
 {
-    m_TotalLength = 0;
-    DoInit(code);
+    m_Meta = nullptr;
+    m_RangeFrom = 0;
+    DoInit(Type);
 }
 
 
-void HttpResponse::Init(std::string type, const char* data, size_t length, long range_max, size_t range_from, size_t range_to)
+void HttpResponse::Init(std::string Type, const char* Data, size_t Length, long RangeMax, size_t RangeFrom, size_t RangeTo, ContentMeta* Meta)
 {
-    m_TotalLength = range_max;
-    DoInit(ECode::OK, type, data, length, range_max, range_from, range_to);
+    m_Meta = Meta;
+    m_RangeFrom = RangeFrom;
+    DoInit(ECode::OK, Type, Data, Length, RangeMax, RangeFrom, RangeTo);
 }
 
 
 size_t HttpResponse::GetTotalSize() const
 {
-    return m_AllBuffers[Header].len + m_TotalLength;
+    if (m_Meta != nullptr)
+    {
+        return m_AllBuffers[Header].len + m_Meta->Size();
+    }
+    else
+    {
+        size_t sum = 0;
+        for (const WSABUF buf : m_AllBuffers)
+        {
+            sum += buf.len;
+        }
+        return sum;
+    }
 }
 
 
-void HttpResponse::Advance(size_t sent)
+void HttpResponse::Advance(size_t Sent)
 {
-    m_Pos += sent;
+    m_Pos += Sent;
     assert(m_Pos <= GetTotalSize());
+}
+
+
+void HttpResponse::RemoveBuffer()
+{
+    if (m_Meta != nullptr)
+    {
+        m_Meta->RemoveBuffer(m_SendBuffers[m_SendBufferCount - 1].buf);
+    }
+}
+
+
+void HttpResponse::RemoveBuffer(char* Buffer)
+{
+    if (m_Meta != nullptr)
+    {
+        m_Meta->RemoveBuffer(Buffer);
+    }
 }
 
 
@@ -50,24 +84,38 @@ bool HttpResponse::IsFullySent() const
 }
 
 
-void HttpResponse::Prepare(size_t maxBytesToSend)
+char* HttpResponse::Prepare(size_t MaxBytesToSend)
 {
+    char* buffer = nullptr;
+
     m_SendBufferCount = 0;
 
     size_t acc = 0;
     for (const WSABUF buf : m_AllBuffers)
     {
         const size_t beg = std::max<size_t>(acc, m_Pos);
-        const size_t end = std::min<size_t>(acc + buf.len, m_Pos + maxBytesToSend);
+        const size_t end = std::min<size_t>(acc + buf.len, m_Pos + MaxBytesToSend);
         if (beg < end)
         {
-            ITRACE("offset: %d, len: %d", beg - acc, end - beg);
-            m_SendBuffers[m_SendBufferCount].len = static_cast<ULONG>(end - beg);
-            m_SendBuffers[m_SendBufferCount].buf = buf.buf + (beg - acc);
+            size_t length = end - beg;
+            if (FIRST_SEND_BUF_LEN < length && length <= OTHER_SEND_BUF_LEN)
+            {
+                buffer = m_Meta->ReadOtherBuffer(m_RangeFrom + beg - acc, length);
+
+                m_SendBuffers[m_SendBufferCount].buf = buffer;
+            }
+            else
+            {
+                m_SendBuffers[m_SendBufferCount].buf = buf.buf + (beg - acc);
+            }
+            m_SendBuffers[m_SendBufferCount].len = length;
+
             ++m_SendBufferCount;
         }
         acc += buf.len;
     }
+
+    return buffer;
 }
 
 
@@ -83,9 +131,9 @@ DWORD HttpResponse::GetBufferCount() const
 }
 
 
-void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t length, long range_max, size_t range_from, size_t range_to)
+void HttpResponse::DoInit(ECode Code, std::string Type, const char* Data, size_t Length, long RangeMax, size_t RangeFrom, size_t RangeTo)
 {
-    m_Code = code;
+    m_Code = Code;
 
     m_Pos = 0;
     m_SendBufferCount = 0;
@@ -93,18 +141,18 @@ void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t
     static const char endl[] = "\r\n";
 
     std::ostringstream oss;
-    switch (code) 
+    switch (Code)
     {
         case ECode::OK:
-            oss << (range_to == 0 ? "HTTP/1.1 200 OK" : "HTTP/1.1 206 Partial Content") << endl;
+            oss << (RangeTo == 0 ? "HTTP/1.1 200 OK" : "HTTP/1.1 206 Partial Content") << endl;
             oss << "Connection: Keep-Alive" << endl;
             oss << "Accept-Ranges: bytes" << endl;
-            oss << "Content-Type: " + type << endl;
-            if (range_to > 0)
+            oss << "Content-Type: " + Type << endl;
+            if (RangeTo > 0)
             {
-                oss << "Content-Range: bytes " << range_from << "-" << range_to << "/" << range_max << endl;
+                oss << "Content-Range: bytes " << RangeFrom << "-" << RangeTo << "/" << RangeMax << endl;
             }
-            SetBody(data, length);
+            SetBody(Data, Length);
             break;
 
         case ECode::NotFound:
@@ -131,20 +179,20 @@ void HttpResponse::DoInit(ECode code, std::string type, const char* data, size_t
 }
 
 
-void HttpResponse::WriteCustomBody(int code, const char* message)
+void HttpResponse::WriteCustomBody(int Code, const char* Message)
 {
     std::ostringstream oss;
     oss << "<html>";
     oss << "<body>";
-    oss << "<h1>" << code << " " << message << "</h1>";
+    oss << "<h1>" << Code << " " << Message << "</h1>";
     oss << "</body>";
     oss << "</html>";
     m_CustomBodyText = std::move(oss.str());
 }
 
 
-void HttpResponse::SetBody(const char* data, size_t length)
+void HttpResponse::SetBody(const char* Data, size_t Length)
 {
-    m_AllBuffers[Body].buf = const_cast<char*>(data);
-    m_AllBuffers[Body].len = static_cast<ULONG>(length);
+    m_AllBuffers[Body].buf = const_cast<char*>(Data);
+    m_AllBuffers[Body].len = static_cast<ULONG>(Length);
 }

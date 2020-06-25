@@ -8,19 +8,19 @@
 #include <Windows.h>
 
 
-MemoryPool::MemoryPool(size_t blockSize, size_t capacity)
-    : m_BlockSize(blockSize)
-    , m_TotalFree(capacity)
+MemoryPool::MemoryPool(size_t BlockSize, size_t Capacity)
+    : m_BlockSize(BlockSize)
+    , m_TotalFree(Capacity)
     , m_FirstFree(0)
-    , m_Undefined(capacity)
-    , m_NextFree(capacity)
+    , m_Undefined(Capacity)
+    , m_NextFree(Capacity)
 {
     ITRACE("");
 
-    if (capacity == 0) {
+    if (Capacity == 0) {
         return;
     }
-    m_Data = static_cast<char*>(_aligned_malloc(m_BlockSize * capacity, m_BlockSize));
+    m_Data = static_cast<char*>(_aligned_malloc(m_BlockSize * Capacity, m_BlockSize));
     if (m_Data == 0) {
         throw std::bad_alloc();
     }
@@ -62,11 +62,11 @@ char* MemoryPool::NewRaw()
 }
 
 
-void MemoryPool::DeleteRaw(char* block)
+void MemoryPool::DeleteRaw(char* Block)
 {
     ITRACE("");
 
-    const ptrdiff_t delta = block - m_Data;
+    const ptrdiff_t delta = Block - m_Data;
     if (delta < 0 || delta % m_BlockSize != 0) 
     {
         throw std::runtime_error("bad block pointer");

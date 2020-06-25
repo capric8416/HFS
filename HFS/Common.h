@@ -12,8 +12,9 @@ void ITrace(char* Format, ...);
 
 
 // constants to tune
-#define RECV_BUF_LENGTH    51200
-#define MAX_SEND_BLOCK     1024000
+#define RECV_BUF_LEN 40960
+#define FIRST_SEND_BUF_LEN 4096
+#define OTHER_SEND_BUF_LEN 4096000
 
 
 // XTRACE only working on debug mode

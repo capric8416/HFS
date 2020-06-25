@@ -16,7 +16,7 @@ StatPrinter::StatPrinter()
 }
 
 
-bool StatPrinter::Print(size_t numClients)
+bool StatPrinter::Print(size_t NumClients)
 {
     ITRACE("");
 
@@ -25,7 +25,7 @@ bool StatPrinter::Print(size_t numClients)
     const uint64_t ts = GetTickCount64();
     if (m_LastPrinted + DELAY < ts)
     {
-        ITRACE("active clients: %ull", numClients);
+        ITRACE("active clients: %ull", NumClients);
         m_LastPrinted = ts;
         return true;
     }

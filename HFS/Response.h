@@ -17,6 +17,9 @@
 #include <utility>
 
 
+class ContentMeta;
+
+
 enum class ECode {
     OK,
     NotFound,
@@ -28,26 +31,28 @@ class HttpResponse {
 public:
     HttpResponse();
 
-    void Init(ECode code);
-    void Init(std::string type, const char* data, size_t length, long range_max = 0, size_t range_from = 0, size_t range_to = 0);
+    void Init(ECode Code);
+    void Init(std::string Type, const char* Data, size_t Length, long RangeMax = 0, size_t RangeFrom = 0, size_t RangeTo = 0, ContentMeta* Meta = nullptr);
 
     size_t GetTotalSize() const;
 
-    void Advance(size_t sent);
+    void Advance(size_t Sent);
+    void RemoveBuffer();
+    void RemoveBuffer(char* Buffer);
 
     bool IsFullySent() const;
 
-    void Prepare(size_t maxBytesToSend);
+    char* Prepare(size_t MaxBytesToSend);
 
     WSABUF* GetBuffers() const;
     DWORD GetBufferCount() const;
 
 private:
-    void DoInit(ECode code, std::string type = "", const char* data = nullptr, size_t length = 0, long range_max = 0, size_t range_from = 0, size_t range_to = 0);
+    void DoInit(ECode Code, std::string Type = "", const char* Data = nullptr, size_t Length = 0, long RangeMax = 0, size_t RangeFrom = 0, size_t RangeTo = 0);
 
-    void WriteCustomBody(int code, const char* message);
+    void WriteCustomBody(int Code, const char* Message);
 
-    void SetBody(const char* data, size_t length);
+    void SetBody(const char* Data, size_t Length);
 
 
 private:
@@ -64,7 +69,9 @@ private:
 
     size_t m_Pos;
 
-    long m_TotalLength;
+    ContentMeta* m_Meta;
+    long m_RangeFrom;
+
     DWORD m_SendBufferCount;
     std::array<WSABUF, 2> m_SendBuffers;
 };

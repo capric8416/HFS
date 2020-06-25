@@ -60,13 +60,13 @@ ServerContext::~ServerContext()
 }
 
 
-std::string ServerContext::FileAccessAuth(std::string type, std::string path)
+std::string ServerContext::FileAccessAuth(std::string Type, std::string Path)
 {
-    return m_ContentToServe.GetOrNewToken(type, path);
+    return m_ContentToServe.GetOrNewToken(Type, Path);
 }
 
 
-void ServerContext::InitNewClient(SocketWrapper&& socket)
+void ServerContext::InitNewClient(SocketWrapper&& Socket)
 {
     ITRACE("");
 
@@ -74,14 +74,14 @@ void ServerContext::InitNewClient(SocketWrapper&& socket)
     ++m_ClientCounter;
     const size_t clientID = m_ClientCounter;
 
-    const HANDLE hTemp = CreateIoCompletionPort((HANDLE)socket.Get(), m_IOCompletionPort, clientID, 0);
+    const HANDLE hTemp = CreateIoCompletionPort((HANDLE)Socket.Get(), m_IOCompletionPort, clientID, 0);
     if (hTemp == NULL)
     {
         throw WinAPIException("CreateIoCompletionPort (association failed)", GetLastError());
     }
     assert(hTemp == m_IOCompletionPort);
 
-    AddToMap(clientID, ClientPtr(new HttpClient(m_ContentToServe, std::move(socket))));
+    AddToMap(clientID, ClientPtr(new HttpClient(m_ContentToServe, std::move(Socket))));
     const auto& client = GetClientByID(clientID);
 
     try
@@ -99,18 +99,18 @@ void ServerContext::InitNewClient(SocketWrapper&& socket)
 }
 
 
-void ServerContext::NotifyClientDeath(size_t clientID)
+void ServerContext::NotifyClientDeath(size_t ClientID)
 {
     ITRACE("");
 
-    RemoveFromMap(clientID);
+    RemoveFromMap(ClientID);
 }
 
 
-const ClientPtr& ServerContext::GetClientByID(size_t clientID)
+const ClientPtr& ServerContext::GetClientByID(size_t ClientID)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    const auto it = m_ActiveClients.find(clientID);
+    const auto it = m_ActiveClients.find(ClientID);
     if (it != m_ActiveClients.end())
     {
         return it->second;
@@ -170,21 +170,21 @@ void ServerContext::EnumClients() const
 }
 
 
-void ServerContext::AddToMap(size_t clientID, ClientPtr&& client)
+void ServerContext::AddToMap(size_t ClientID, ClientPtr&& Client)
 {
     ITRACE("");
 
     std::lock_guard<std::mutex> lock(m_Mutex);
-    m_ActiveClients[clientID] = std::move(client);
+    m_ActiveClients[ClientID] = std::move(Client);
 }
 
 
-void ServerContext::RemoveFromMap(size_t clientID)
+void ServerContext::RemoveFromMap(size_t ClientID)
 {
     ITRACE("");
 
     std::lock_guard<std::mutex> lock(m_Mutex);
-    const auto it = m_ActiveClients.find(clientID);
+    const auto it = m_ActiveClients.find(ClientID);
     if (it != m_ActiveClients.end())
     {
         m_ActiveClients.erase(it);

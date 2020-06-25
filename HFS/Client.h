@@ -35,9 +35,9 @@ enum EOperation
 class HttpClient
 {
 public:
-    HttpClient(const ContentToServe& content, SocketWrapper&& socket)
-        : m_Content(content)
-        , m_Socket(std::move(socket))
+    HttpClient(const ContentToServe& Content, SocketWrapper&& Socket)
+        : m_Content(Content)
+        , m_Socket(std::move(Socket))
         , m_CurrentOp(EOperation::No)
         , m_RecvFlags(0)
         , m_TotalBytesTransferred(0)
@@ -49,6 +49,12 @@ public:
     }
     virtual ~HttpClient()
     {
+        for (char* buffer : m_Buffers)
+        {
+            m_Response.RemoveBuffer(buffer);
+        }
+        m_Buffers.clear();
+
         assert(IsCompleted());
     }
 
@@ -59,17 +65,17 @@ public:
     }
 
     // is called from working thread
-    void CompleteIOOperation(DWORD bytesTransferred)
+    void CompleteIOOperation(DWORD BytesTransferred)
     {
-        m_TotalBytesTransferred += bytesTransferred;
+        m_TotalBytesTransferred += BytesTransferred;
 
         switch (m_CurrentOp)
         {
             case EOperation::RecvPending:
-                DoRecvDone(bytesTransferred);
+                DoRecvDone(BytesTransferred);
                 break;
             case EOperation::SendPending:
-                DoSendDone(bytesTransferred);
+                DoSendDone(BytesTransferred);
                 break;
             default:
                 throw std::runtime_error("end of IO operation received, but no op is pending");
@@ -97,13 +103,13 @@ private:
 
     void DoRecv();
 
-    void DoRecvDone(DWORD bytesReceived);
+    void DoRecvDone(DWORD BytesReceived);
 
     void MakeResponse();
 
     void DoSend();
 
-    void DoSendDone(DWORD bytesSent);
+    void DoSendDone(DWORD BytesSent);
 
 private:
     const ContentToServe& m_Content;
@@ -114,7 +120,7 @@ private:
 
     WSABUF m_RecvBuf;
     DWORD m_RecvFlags;
-    std::array<char, RECV_BUF_LENGTH> m_RecvData;
+    std::array<char, RECV_BUF_LEN> m_RecvData;
     MemoryInput m_MemoryInput;
     HttpRequest m_Request;
 
@@ -122,6 +128,8 @@ private:
     HttpResponse m_Response;
 
     size_t m_TotalBytesTransferred;
+
+    std::set<char*> m_Buffers;
 };
 
 

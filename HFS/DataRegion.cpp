@@ -18,9 +18,9 @@ DataRegion::DataRegion()
 }
 
 
-DataRegion::DataRegion(const char* data, size_t length)
-    : m_Data(data)
-    , m_Length(length)
+DataRegion::DataRegion(const char* Data, size_t Length)
+    : m_Data(Data)
+    , m_Length(Length)
     , m_RangeFrom(0)
     , m_RangeTo(0)
     , m_TotalLength(0)
@@ -29,13 +29,13 @@ DataRegion::DataRegion(const char* data, size_t length)
 
 
 
-DataRegion::DataRegion(std::string type, const char* data, size_t length, size_t range_from, size_t range_to, long total_length)
-    : m_Type(type)
-    , m_Data(data)
-    , m_Length(length)
-    , m_RangeFrom(range_from)
-    , m_RangeTo(range_to)
-    , m_TotalLength(total_length)
+DataRegion::DataRegion(std::string Type, const char* Data, size_t Length, size_t RangeFrom, size_t RangeTo, long TotalLength)
+    : m_Type(Type)
+    , m_Data(Data)
+    , m_Length(Length)
+    , m_RangeFrom(RangeFrom)
+    , m_RangeTo(RangeTo)
+    , m_TotalLength(TotalLength)
 {
 }
 
@@ -76,7 +76,7 @@ size_t DataRegion::GetRangeTo() const
 }
 
 
-long DataRegion::GetTotalLenght() const
+long DataRegion::GetTotalLength() const
 {
     return m_TotalLength;
 }
