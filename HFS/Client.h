@@ -47,6 +47,7 @@ public:
         m_RecvBuf.len = static_cast<unsigned long>(m_RecvData.size());
         m_RecvBuf.buf = m_RecvData.data();
     }
+
     virtual ~HttpClient()
     {
         for (char* buffer : m_Buffers)
@@ -55,7 +56,7 @@ public:
         }
         m_Buffers.clear();
 
-        assert(IsCompleted());
+        //assert(IsCompleted());
     }
 
     // is called from accept thread

@@ -73,11 +73,13 @@ void ContentMeta::ReadFirstBuffer()
     fseek(m_File, 0, SEEK_END);
     m_Size = ftell(m_File);
 
-    m_Buffer = new char[FIRST_SEND_BUF_LEN];
-    memset(m_Buffer, 0, FIRST_SEND_BUF_LEN);
+    auto size = m_MineType.find("image") == 0 ? m_Size : FIRST_SEND_BUF_LEN;
+
+    m_Buffer = new char[size];
+    memset(m_Buffer, 0, size);
 
     rewind(m_File);
-    fread(m_Buffer, sizeof(char), FIRST_SEND_BUF_LEN, m_File);
+    fread(m_Buffer, sizeof(char), size, m_File);
 }
 
 
@@ -103,7 +105,7 @@ char* ContentMeta::GetFirstBuffer(long& Length, int& RangeFrom, int& RangeTo)
     }
     else
     {
-        Length = FIRST_SEND_BUF_LEN;
+        Length = m_MineType.find("image") == 0 ? m_Size : FIRST_SEND_BUF_LEN;
     }
 
     return m_Buffer;

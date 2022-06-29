@@ -145,8 +145,11 @@ void HttpResponse::DoInit(ECode Code, std::string Type, const char* Data, size_t
     {
         case ECode::OK:
             oss << (RangeTo == 0 ? "HTTP/1.1 200 OK" : "HTTP/1.1 206 Partial Content") << endl;
-            oss << "Connection: Keep-Alive" << endl;
-            oss << "Accept-Ranges: bytes" << endl;
+            if (Type.find("image") == -1)
+            {
+                oss << "Connection: Keep-Alive" << endl;
+                oss << "Accept-Ranges: bytes" << endl;
+            }
             oss << "Content-Type: " + Type << endl;
             if (RangeTo > 0)
             {
